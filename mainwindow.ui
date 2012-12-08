@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>587</width>
+    <height>355</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralWidget"/>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>587</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuDatabase">
+    <property name="title">
+     <string>база данных</string>
+    </property>
+    <addaction name="open"/>
+    <addaction name="separator"/>
+    <addaction name="customRequest"/>
+   </widget>
+   <widget class="QMenu" name="menuQuery">
+    <property name="title">
+     <string>запрос</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menuTable">
+    <property name="title">
+     <string>таблица</string>
+    </property>
+   </widget>
+   <addaction name="menuDatabase"/>
+   <addaction name="menuQuery"/>
+   <addaction name="menuTable"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="open">
+   <property name="text">
+    <string>открыть</string>
+   </property>
+  </action>
+  <action name="action_2">
+   <property name="text">
+    <string>таблица</string>
+   </property>
+  </action>
+  <action name="action_3">
+   <property name="text">
+    <string>операции</string>
+   </property>
+  </action>
+  <action name="action_4">
+   <property name="text">
+    <string>свой запрос</string>
+   </property>
+  </action>
+  <action name="customRequest">
+   <property name="text">
+    <string>ввести запрос</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections/>
+</ui>
