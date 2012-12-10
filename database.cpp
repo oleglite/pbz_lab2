@@ -13,7 +13,7 @@ Database::Database(const QString& dbFilePath):
     }
 
     loadQueries("D:\\Documents\\univer\\term 5\\PBZ\\lab2\\queries.sql");
-    qDebug() << getTables();
+    qDebug() << getTablesNames();
 
 /*
     QSqlQuery query("SELECT * FROM Cutter");
@@ -57,19 +57,19 @@ QSqlQueryModel* Database::getModel()
     return &mSqlModel;
 }
 
-const QList<DatabaseQuery>& Database::getQueries() const
+const QList<DatabaseQuery>& Database::getLoadedQueries() const
 {
     return mQueries;
 }
 
-QStringList Database::getTables() const
+QStringList Database::getTablesNames() const
 {
     QRegExp tableFilter("[A-Z]{1}([a-z]?)*");
     tableFilter.setCaseSensitivity(Qt::CaseSensitive);
     return mDatabase.tables(QSql::Tables).filter(tableFilter);
 }
 
-void Database::request(const QString &queryDesc)
+void Database::loadedRequest(const QString &queryDesc)
 {
     foreach(DatabaseQuery dq, mQueries) {
         if(dq.desc == queryDesc) {
@@ -78,8 +78,46 @@ void Database::request(const QString &queryDesc)
     }
 }
 
+void Database::tableRequest(const QString& tableName)
+{
+    customRequest("SELECT * FROM " + tableName + ";");
+}
+
 void Database::customRequest(const QString& request)
 {
+    if(request.indexOf(";", request.indexOf(";") + 1) >= 0) {
+        transaction(splitComplexQuery(request));
+    }
     mSqlModel.setQuery(request);
+    qDebug() << "customRequest()" << mSqlModel.query().isActive() << mSqlModel.query().executedQuery();
+    qDebug() << "==============================";
+    qDebug() << request;
+    qDebug() << "==============================";
+
+}
+
+QStringList Database::splitComplexQuery(const QString& q)
+{
+    QStringList resultQueries;
+    QString query = q;
+    while(!query.isEmpty() && query.indexOf(";") >= 0) {
+        int queryLength = query.indexOf(";") + 1;
+        resultQueries << query.mid(0, queryLength);
+        query.remove(0, queryLength);
+    }
+    return resultQueries;
+}
+
+void Database::transaction(const QStringList& queries)
+{
+    qDebug() << "transaction()" << queries;
+
+    QSqlDatabase::database().transaction();
+    QSqlQuery query;
+    foreach(QString q, queries) {
+        query.exec(q);
+    }
+    QSqlDatabase::database().commit();
+    mSqlModel.setQuery(query);
 }
 

@@ -37,6 +37,7 @@ private:
 
     void createActions();
     void createQueryAction(const QString &queryDesc);
+    void createTableAction(const QString &tableName);
 };
 
 #endif // MAINWINDOW_H

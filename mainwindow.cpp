@@ -59,8 +59,12 @@ void MainWindow::customRequest()
 void MainWindow::createActions()
 {
     mUi->menuQuery->clear();
-    foreach(const DatabaseQuery& databaseQuery, mDB->getQueries()) {
+    foreach(const DatabaseQuery& databaseQuery, mDB->getLoadedQueries()) {
         createQueryAction(databaseQuery.desc);
+    }
+    mUi->menuTable->clear();
+    foreach(const QString& tableName, mDB->getTablesNames()) {
+        createTableAction(tableName);
     }
 }
 
@@ -69,6 +73,14 @@ void MainWindow::createQueryAction(const QString& queryDesc)
     QAction *action = mUi->menuQuery->addAction(queryDesc);
     ActionHandler *handler = new ActionHandler(action);
     connect(action, SIGNAL(triggered()), handler, SLOT(actionTriggered()));
-    connect(handler, SIGNAL(triggered(QString)), mDB, SLOT(request(QString)));
+    connect(handler, SIGNAL(triggered(QString)), mDB, SLOT(loadedRequest(QString)));
+}
+
+void MainWindow::createTableAction(const QString &tableName)
+{
+    QAction *action = mUi->menuTable->addAction(tableName);
+    ActionHandler *handler = new ActionHandler(action);
+    connect(action, SIGNAL(triggered()), handler, SLOT(actionTriggered()));
+    connect(handler, SIGNAL(triggered(QString)), mDB, SLOT(tableRequest(QString)));
 }
 
