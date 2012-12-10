@@ -13,11 +13,13 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     database.cpp \
-    actionhandler.cpp
+    actionhandler.cpp \
+    custominputdialog.cpp
 
 HEADERS  += mainwindow.h \
     database.h \
-    actionhandler.h
+    actionhandler.h \
+    custominputdialog.h
 
 FORMS    += mainwindow.ui \
     customRequestDialog.ui
