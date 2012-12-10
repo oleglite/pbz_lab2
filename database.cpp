@@ -14,13 +14,6 @@ Database::Database(const QString& dbFilePath):
 
     loadQueries("D:\\Documents\\univer\\term 5\\PBZ\\lab2\\queries.sql");
     qDebug() << getTablesNames();
-
-/*
-    QSqlQuery query("SELECT * FROM Cutter");
-    qDebug() << query.isActive();
-    while (query.next()) {
-        qDebug() << query.value(0).toString() << query.value(1).toString();
-    }*/
 }
 
 void Database::loadQueries(const QString& filename)
@@ -45,10 +38,6 @@ void Database::loadQueries(const QString& filename)
         }
     }
 
-    foreach(DatabaseQuery dq, mQueries) {
-        qDebug() << dq.desc << dq.request;
-    }
-
     queriesFile.close();
 }
 
@@ -69,31 +58,40 @@ QStringList Database::getTablesNames() const
     return mDatabase.tables(QSql::Tables).filter(tableFilter);
 }
 
-void Database::loadedRequest(const QString &queryDesc)
+void Database::performLoadedRequest(const QString &queryDesc)
 {
     foreach(DatabaseQuery dq, mQueries) {
         if(dq.desc == queryDesc) {
-            customRequest(dq.request);
+            performCustomRequest(dq.request);
         }
     }
 }
 
-void Database::tableRequest(const QString& tableName)
+void Database::performTableRequest(const QString& tableName)
 {
-    customRequest("SELECT * FROM " + tableName + ";");
+    performCustomRequest("SELECT * FROM " + tableName + ";");
 }
 
-void Database::customRequest(const QString& request)
+void Database::performCustomRequest(const QString& request)
 {
-    if(request.indexOf(";", request.indexOf(";") + 1) >= 0) {
-        transaction(splitComplexQuery(request));
+    if(isComplexRequest(request)) {
+        const QSqlQuery& query = performTtransaction(splitComplexQuery(request));
+        mSqlModel.setQuery(query);
+    } else if(requestHasInputs(request)) {
+        mSqlModel.setQuery(performInputRequest(request));
+    } else {
+        mSqlModel.setQuery(request);
     }
-    mSqlModel.setQuery(request);
-    qDebug() << "customRequest()" << mSqlModel.query().isActive() << mSqlModel.query().executedQuery();
-    qDebug() << "==============================";
-    qDebug() << request;
-    qDebug() << "==============================";
+}
 
+bool Database::requestHasInputs(const QString& request)
+{
+    return request.indexOf(":") >= 0;
+}
+
+bool Database::isComplexRequest(const QString &request)
+{
+    return request.indexOf(";", request.indexOf(";") + 1) >= 0;
 }
 
 QStringList Database::splitComplexQuery(const QString& q)
@@ -108,16 +106,48 @@ QStringList Database::splitComplexQuery(const QString& q)
     return resultQueries;
 }
 
-void Database::transaction(const QStringList& queries)
+QSqlQuery Database::performTtransaction(const QStringList& queries)
 {
     qDebug() << "transaction()" << queries;
 
     QSqlDatabase::database().transaction();
     QSqlQuery query;
     foreach(QString q, queries) {
-        query.exec(q);
+        if(requestHasInputs(q)) {
+            query = performInputRequest(q);
+        } else {
+            query.exec(q);
+        }
     }
     QSqlDatabase::database().commit();
-    mSqlModel.setQuery(query);
+    return query;
+}
+
+QSqlQuery Database::performInputRequest(const QString& request)
+{
+    QSqlQuery query;
+    query.prepare(request);
+
+    QStringList placeHolders;
+    QStringList inputValuesLabels;
+    QRegExp rx(":(\\w+)");
+    int pos = 0;
+    while ((pos = rx.indexIn(request, pos)) != -1) {
+        pos += rx.matchedLength();
+        placeHolders << rx.cap(0);
+        inputValuesLabels << rx.cap(1);
+    }
+
+    const QStringList& values = CustomInputDialog::showDialog(inputValuesLabels);
+    if(values.size() == placeHolders.size()) {
+        for(int i = 0; i < values.size(); i++) {
+            query.bindValue(placeHolders.value(i), values.value(i));
+        }
+        query.exec();
+        return query;
+    } else {
+        return QSqlQuery();
+    }
+
 }
 

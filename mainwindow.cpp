@@ -9,12 +9,19 @@ MainWindow::MainWindow(QWidget *parent) :
     mCustomRequestDialogUi(new Ui::CustomRequestDialog),
     mCustomRequestDialog(new QDialog),
     mFileDialog(new QFileDialog),
+    mCentralLabel(new QLabel),
     mCentralTableView(new QTableView)
 {
     mUi->setupUi(this);
     mCustomRequestDialogUi->setupUi(mCustomRequestDialog);
     mFileDialog->setDirectory(QDir("D:/"));
-    setCentralWidget(mCentralTableView);
+
+    QWidget *centralWidget = new QWidget;
+    QVBoxLayout *centralLayout = new QVBoxLayout;
+    centralLayout->addWidget(mCentralLabel);
+    centralLayout->addWidget(mCentralTableView);
+    centralWidget->setLayout(centralLayout);
+    setCentralWidget(centralWidget);
 
     connect(mUi->open, SIGNAL(triggered()), SLOT(showDialogOpenDB()));
     connect(mUi->customRequest, SIGNAL(triggered()), SLOT(showDialogCustomRequest()));
@@ -44,6 +51,7 @@ void MainWindow::openDB(const QString& filePath)
     mDB = new Database(filePath);
     mCentralTableView->setModel(mDB->getModel());
     createActions();
+    mCentralLabel->clear();
 }
 
 void MainWindow::showDialogCustomRequest()
@@ -53,7 +61,13 @@ void MainWindow::showDialogCustomRequest()
 
 void MainWindow::customRequest()
 {
-    mDB->customRequest(mCustomRequestDialogUi->textEdit->toPlainText());
+    mDB->performCustomRequest(mCustomRequestDialogUi->textEdit->toPlainText());
+    mCentralLabel->clear();
+}
+
+void MainWindow::setCentralLabel(const QString& labelText)
+{
+    mCentralLabel->setText(labelText);
 }
 
 void MainWindow::createActions()
@@ -73,7 +87,8 @@ void MainWindow::createQueryAction(const QString& queryDesc)
     QAction *action = mUi->menuQuery->addAction(queryDesc);
     ActionHandler *handler = new ActionHandler(action);
     connect(action, SIGNAL(triggered()), handler, SLOT(actionTriggered()));
-    connect(handler, SIGNAL(triggered(QString)), mDB, SLOT(loadedRequest(QString)));
+    connect(handler, SIGNAL(triggered(QString)), mDB, SLOT(performLoadedRequest(QString)));
+    connect(handler, SIGNAL(triggered(QString)), SLOT(setCentralLabel(QString)));
 }
 
 void MainWindow::createTableAction(const QString &tableName)
@@ -81,6 +96,7 @@ void MainWindow::createTableAction(const QString &tableName)
     QAction *action = mUi->menuTable->addAction(tableName);
     ActionHandler *handler = new ActionHandler(action);
     connect(action, SIGNAL(triggered()), handler, SLOT(actionTriggered()));
-    connect(handler, SIGNAL(triggered(QString)), mDB, SLOT(tableRequest(QString)));
+    connect(handler, SIGNAL(triggered(QString)), mDB, SLOT(performTableRequest(QString)));
+    connect(handler, SIGNAL(triggered(QString)), SLOT(setCentralLabel(QString)));
 }
 

@@ -4,6 +4,8 @@
 #include <QtSql>
 #include <QObject>
 
+#include "custominputdialog.h"
+
 struct DatabaseQuery
 {
     DatabaseQuery(const QString& d) :
@@ -26,23 +28,28 @@ public:
     const QList<DatabaseQuery>& getLoadedQueries() const;
     QStringList getTablesNames() const;
 
-    void customRequest(const QString&);
+    void performCustomRequest(const QString&);
 
 public slots:
     /** ¬ыполнить готовый запрос
      * @param queryDesc описание запроса
      */
-    void loadedRequest(const QString& queryDesc);
-    void tableRequest(const QString& tableName);
+    void performLoadedRequest(const QString& queryDesc);
+    void performTableRequest(const QString& tableName);
 
 private:
     QSqlQueryModel mSqlModel;
     QList<DatabaseQuery> mQueries;
     QSqlDatabase mDatabase;
 
+    static bool requestHasInputs(const QString &request);
+    static bool isComplexRequest(const QString &request);
+
     static QStringList splitComplexQuery(const QString&);
     void loadQueries(const QString&);
-    void transaction(const QStringList&);
+
+    static QSqlQuery performTtransaction(const QStringList &queries);
+    static QSqlQuery performInputRequest(const QString &request);
 };
 
 #endif // DATABASE_H

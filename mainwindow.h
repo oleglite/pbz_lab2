@@ -4,6 +4,7 @@
 #include <QtGui>
 #include "database.h"
 #include "actionhandler.h"
+#include "custominputdialog.h"
 
 namespace Ui {
 class MainWindow;
@@ -23,6 +24,7 @@ public slots:
     void openDB(const QString& filePath);
     void showDialogCustomRequest();
     void customRequest();
+    void setCentralLabel(const QString&);
     
 private:
     Database *mDB;
@@ -32,6 +34,7 @@ private:
 
     QDialog *mCustomRequestDialog;
     QFileDialog *mFileDialog;
+    QLabel *mCentralLabel;
     QTableView *mCentralTableView;
 
 
