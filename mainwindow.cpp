@@ -70,6 +70,22 @@ void MainWindow::setCentralLabel(const QString& labelText)
     mCentralLabel->setText(labelText);
 }
 
+void MainWindow::tableRequest(const QString& tableName)
+{
+    QTableView *view = new QTableView();
+    view->setModel(mDB->performTableRequest(tableName));
+    view->setWindowTitle(tableName);
+    view->resizeColumnsToContents();
+    view->resize(view->horizontalHeader()->length() + 30, view->verticalHeader()->length() + 40);
+    view->show();
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    QMainWindow::closeEvent(event);
+    QApplication::exit();
+}
+
 void MainWindow::createActions()
 {
     mUi->menuQuery->clear();
@@ -96,7 +112,7 @@ void MainWindow::createTableAction(const QString &tableName)
     QAction *action = mUi->menuTable->addAction(tableName);
     ActionHandler *handler = new ActionHandler(action);
     connect(action, SIGNAL(triggered()), handler, SLOT(actionTriggered()));
-    connect(handler, SIGNAL(triggered(QString)), mDB, SLOT(performTableRequest(QString)));
+    connect(handler, SIGNAL(triggered(QString)), SLOT(tableRequest(QString)));
     connect(handler, SIGNAL(triggered(QString)), SLOT(setCentralLabel(QString)));
 }
 

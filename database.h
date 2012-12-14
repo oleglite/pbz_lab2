@@ -23,24 +23,25 @@ class Database : public QObject
 public:
     explicit Database(const QString& dbFilePath);
 
-
     QSqlQueryModel* getModel();
     const QList<DatabaseQuery>& getLoadedQueries() const;
     QStringList getTablesNames() const;
 
     void performCustomRequest(const QString&);
+    QSqlTableModel *performTableRequest(const QString& tableName);
 
 public slots:
     /** ¬ыполнить готовый запрос
      * @param queryDesc описание запроса
      */
     void performLoadedRequest(const QString& queryDesc);
-    void performTableRequest(const QString& tableName);
+    void update();
 
 private:
     QSqlQueryModel mSqlModel;
     QList<DatabaseQuery> mQueries;
     QSqlDatabase mDatabase;
+    QList<QSqlTableModel*> mTableModels;
 
     static bool requestHasInputs(const QString &request);
     static bool isComplexRequest(const QString &request);

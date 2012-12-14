@@ -67,9 +67,24 @@ void Database::performLoadedRequest(const QString &queryDesc)
     }
 }
 
-void Database::performTableRequest(const QString& tableName)
+QSqlTableModel* Database::performTableRequest(const QString& tableName)
 {
-    performCustomRequest("SELECT * FROM " + tableName + ";");
+    //performCustomRequest("SELECT * FROM " + tableName + ";");
+
+    QSqlTableModel *model = new QSqlTableModel(this);
+    model->setTable(tableName);
+    model->select();
+    model->setEditStrategy(QSqlTableModel::OnFieldChange);
+
+    mTableModels << model;
+    return model;
+}
+
+void Database::update()
+{
+    foreach(QSqlTableModel *model, mTableModels) {
+        model->select();
+    }
 }
 
 void Database::performCustomRequest(const QString& request)
@@ -82,6 +97,7 @@ void Database::performCustomRequest(const QString& request)
     } else {
         mSqlModel.setQuery(request);
     }
+    update();
 }
 
 bool Database::requestHasInputs(const QString& request)

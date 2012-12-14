@@ -25,6 +25,10 @@ public slots:
     void showDialogCustomRequest();
     void customRequest();
     void setCentralLabel(const QString&);
+    void tableRequest(const QString &tableName);
+
+protected:
+    void closeEvent(QCloseEvent *);
     
 private:
     Database *mDB;
